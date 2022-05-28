@@ -7,6 +7,7 @@
 #include <memory>
 #include <random>
 #include <set>
+#include <sstream>
 #include <tuple>
 #include <type_traits>
 
@@ -163,7 +164,7 @@ struct CompositeExpressionTest : ::testing::Test
         double constLikelihood = .5;
     };
 
-    std::pair<Expression *, Number> randomExpressionRaw(std::size_t level, std::map<std::string, Number> const & variables, const Options & options)
+    std::pair<Expression *, Number> randomExpressionRaw(std::size_t level, const std::map<std::string, Number> & variables, const Options & options)
     {
         if (level > 1) {
             auto [leftExpr, leftValue] = randomExpression(level - 1, variables, options);
@@ -206,7 +207,7 @@ struct CompositeExpressionTest : ::testing::Test
         return {new Variable(var), variables.at(var)};
     }
 
-    std::pair<std::unique_ptr<Expression>, Number> randomExpression(std::size_t level, std::map<std::string, Number> const & variables, const Options & options)
+    std::pair<std::unique_ptr<Expression>, Number> randomExpression(std::size_t level, const std::map<std::string, Number> & variables, const Options & options)
     {
         auto [expr, value] = randomExpressionRaw(level, variables, options);
         return {std::unique_ptr<Expression>(expr), value};
@@ -226,6 +227,10 @@ TEST_F(CompositeExpressionTest, simple)
     Add sum = one + x;
     auto expr = -((x * sum) + y) / two + zero / y + sum;
     EXPECT_EQ(expr.eval({{"x", 2}, {"y", 3}}), -((2_n * (1_n + 2_n)) + 3_n) / 2_n + 0_n / 3_n + (1_n + 2_n));
+
+    std::ostringstream ss;
+    ss << static_cast<const Expression &>(expr);
+    EXPECT_EQ(ss.str(), "((((-((x * (1 + x)) + y)) / 2) + (0 / y)) + (1 + x))");
 }
 
 TEST_F(CompositeExpressionTest, no_vars)
