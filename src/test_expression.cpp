@@ -228,9 +228,10 @@ TEST_F(CompositeExpressionTest, simple)
     auto expr = -((x * sum) + y) / two + zero / y + sum;
     EXPECT_EQ(expr.eval({{"x", 2}, {"y", 3}}), -((2_n * (1_n + 2_n)) + 3_n) / 2_n + 0_n / 3_n + (1_n + 2_n));
 
-    std::ostringstream ss;
-    ss << static_cast<const Expression &>(expr);
-    EXPECT_EQ(ss.str(), "((((-((x * (1 + x)) + y)) / 2) + (0 / y)) + (1 + x))");
+    std::ostringstream ss1, ss2;
+    ss1 << static_cast<const Expression &>(expr);
+    ss2 << "((((-((x * (" << 1_n << " + x)) + y)) / " << 2_n << ") + (" << 0_n << " / y)) + (" << 1_n << " + x))";
+    EXPECT_EQ(ss1.str(), ss2.str());
 }
 
 TEST_F(CompositeExpressionTest, no_vars)
