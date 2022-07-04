@@ -26,7 +26,7 @@ public:
     {
     private:
         const std::function<Number(const Number &)> forNumbers;
-        const std::function<Expression *(const Expression &)> forExpressions;
+        const std::function<std::unique_ptr<Expression>(const Expression &)> forExpressions;
 
         static bool noCheck(const Number &)
         {
@@ -38,9 +38,9 @@ public:
 
         template <class T>
         UnaryOperation(
-                std::function<Number(const Number &)> const & forNumbers,
+                const std::function<Number(const Number &)> & forNumbers,
                 T (*forExpressions)(const Expression &),
-                std::function<bool(const Number &)> const & checkArgs = noCheck)
+                const std::function<bool(const Number &)> & checkArgs = noCheck)
             : forNumbers(forNumbers)
             , forExpressions([=](const Expression & arg) {
                 return forExpressions(arg).clone();
@@ -54,7 +54,7 @@ public:
             return forNumbers(arg);
         }
 
-        Expression * operator()(const Expression & arg) const
+        std::unique_ptr<Expression> operator()(const Expression & arg) const
         {
             return forExpressions(arg);
         }
@@ -64,7 +64,7 @@ public:
     {
     private:
         const std::function<Number(const Number &, const Number &)> forNumbers;
-        const std::function<Expression *(const Expression &, const Expression &)> forExpressions;
+        const std::function<std::unique_ptr<Expression>(const Expression &, const Expression &)> forExpressions;
 
         static bool noCheck(const Number &, const Number &)
         {
@@ -76,9 +76,9 @@ public:
 
         template <class T>
         BinaryOperation(
-                std::function<Number(const Number &, const Number &)> const & forNumbers,
+                const std::function<Number(const Number &, const Number &)> & forNumbers,
                 T (*forExpressions)(const Expression &, const Expression &),
-                std::function<bool(const Number &, const Number &)> const & checkArgs = noCheck)
+                const std::function<bool(const Number &, const Number &)> & checkArgs = noCheck)
             : forNumbers(forNumbers)
             , forExpressions([=](const Expression & left, const Expression & right) {
                 return forExpressions(left, right).clone();
@@ -92,7 +92,7 @@ public:
             return forNumbers(left, right);
         }
 
-        Expression * operator()(const Expression & left, const Expression & right) const
+        std::unique_ptr<Expression> operator()(const Expression & left, const Expression & right) const
         {
             return forExpressions(left, right);
         }

@@ -153,7 +153,7 @@ struct CompositeExpressionTest : ::testing::Test
     }
 
     template <class T, std::size_t Size>
-    const T & randomElement(T const (&array)[Size])
+    const T & randomElement(const T (&array)[Size])
     {
         return randomElement(std::begin(array), std::end(array));
     }
@@ -164,7 +164,7 @@ struct CompositeExpressionTest : ::testing::Test
         double constLikelihood = .5;
     };
 
-    std::pair<Expression *, Number> randomExpressionRaw(std::size_t level, const std::map<std::string, Number> & variables, const Options & options)
+    std::pair<std::unique_ptr<Expression>, Number> randomExpression(std::size_t level, const std::map<std::string, Number> & variables, const Options & options)
     {
         if (level > 1) {
             auto [leftExpr, leftValue] = randomExpression(level - 1, variables, options);
@@ -200,17 +200,11 @@ struct CompositeExpressionTest : ::testing::Test
 
         if (variables.empty() || randomBool(options.constLikelihood)) {
             Number number = randomNumber();
-            return {new Const(number), number};
+            return {std::make_unique<Const>(number), number};
         }
 
         const std::string & var = randomElement(variables.begin(), variables.end()).first;
-        return {new Variable(var), variables.at(var)};
-    }
-
-    std::pair<std::unique_ptr<Expression>, Number> randomExpression(std::size_t level, const std::map<std::string, Number> & variables, const Options & options)
-    {
-        auto [expr, value] = randomExpressionRaw(level, variables, options);
-        return {std::unique_ptr<Expression>(expr), value};
+        return {std::make_unique<Variable>(var), variables.at(var)};
     }
 };
 
